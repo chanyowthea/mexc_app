@@ -5,7 +5,7 @@ from time import sleep
 import time
 
 API_KEY = os.getenv('API_KEY')
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = os.getenv('SECRET_KEY1')
 BASE_URL = 'https://api.mexc.com'
 
 
