@@ -7,17 +7,14 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 BASE_URL = 'https://api.mexc.com'
 
 
-API_KEY = 'mx0vglFW1hsM9wxAk5'
-SECRET_KEY = 'f9103a8995814c3b8473faa28f034093'
-
 
 import mexc_spot_v3
 
 
-import os
-proxy = 'http://127.0.0.1:7890' # 代理设置，此处修改
-os.environ['HTTP_PROXY'] = proxy 
-os.environ['HTTPS_PROXY'] = proxy 
+# import os
+# proxy = 'http://127.0.0.1:7890' # 代理设置，此处修改
+# os.environ['HTTP_PROXY'] = proxy 
+# os.environ['HTTPS_PROXY'] = proxy 
 if __name__ == '__main__':
     trade = mexc_spot_v3.mexc_trade()
     market = mexc_spot_v3.mexc_market()
