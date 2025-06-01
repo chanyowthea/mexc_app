@@ -1,6 +1,8 @@
 
+import json
 import os
 from time import sleep
+import time
 
 API_KEY = os.getenv('API_KEY')
 SECRET_KEY = os.getenv('SECRET_KEY')
@@ -29,6 +31,22 @@ if __name__ == '__main__':
     "limit": "5",
     }
     quantity_ = 0.00001
+
+    # file_name = f'{symbol}_1m_1748764380000.json'
+    # json_obj = None
+    # with open(file_name, 'r') as f:
+    #     json_data = f.read()
+    #     json_obj = json.loads(json_data)
+
+
+    
+    # Kline = market.get_kline(params_kline)
+    # js = {'data':Kline}
+    # with open(file_name, 'w',encoding="utf=8") as f:
+    #     content = json.dumps(js)
+    #     f.write(content)
+
+
 
     # count = 0
     # while True:
@@ -60,14 +78,34 @@ if __name__ == '__main__':
     #     count += 1
 
     print("mexc_app start!!!", flush=True)
+    # Kline = market.get_kline(params_kline)
+    # params = {
+    # "symbol": symbol,
+    # "side": "SELL",
+    # "type": "MARKET",  # Default order type
+    # "price": float(Kline[-1][4]),  # Use the closing price of the last candle
+    # "quantity": quantity_,
+    #     # 'quoteOrderQty': quoteOrderQty_,
+    # }
+    # print(f"place_order params: {params}", flush=True)
+    # PlaceOrder = trade.post_order(params)
+    # print(f"Order result: {PlaceOrder}", flush=True)
+    # if PlaceOrder is None or 'code' in PlaceOrder:
+    #     print(f"====Error placing order: {PlaceOrder}", flush=True)
+
     has_buy = False
     action_time_stamp = ''
+    data_index = 100
+    sleep_gap = 1
     while True:
+        # real_data_index = int(data_index /60)
+        # Kline = json_obj['data'][:real_data_index]  # Use the preloaded Kline data
         Kline = market.get_kline(params_kline)
         # print(f"Kline data: {Kline}", flush=True)
         if not Kline or len(Kline) <= 2:
             print("====Kline data is not sufficient or empty.", flush=True)
-            sleep(1)
+            sleep(sleep_gap)
+            data_index += 1
             continue
         
         prev_k = Kline[-2]
@@ -75,7 +113,7 @@ if __name__ == '__main__':
         prev_k_l = prev_k[3]
         cur_k_c = Kline[-1][4]
 
-        # print('prev_k=',prev_k,prev_k_h, prev_k_l, cur_k_c,flush=True)
+        print('prev_k=',prev_k,prev_k_h, prev_k_l, cur_k_c,flush=True)
         Price = cur_k_c
         order_type = 'MARKET'  # Default order type
         side = None
@@ -90,16 +128,16 @@ if __name__ == '__main__':
             has_buy_temp = True if side == 'BUY' else False
             ts = Kline[-1][0]  # Use the timestamp of the last candle
             if ts == action_time_stamp:
-                print(f"====Action time stamp is the same, skipping order. Current time: {ts}, Previous time: {action_time_stamp}", flush=True)
-                sleep(1)
+                # print(f"====Action time stamp is the same, skipping order. Current time: {ts}, Previous time: {action_time_stamp}", flush=True)
+                sleep(sleep_gap)
+                
+                data_index += 1
                 continue
             if has_buy_temp == has_buy:
-                print(f"====No change in position, skipping order. Current side: {side}, Previous side: {has_buy}", flush=True)
-                sleep(1)
+                # print(f"====No change in position, skipping order. Current side: {side}, Previous side: {has_buy}", flush=True)
+                sleep(sleep_gap)
+                data_index += 1
                 continue
-
-            has_buy = has_buy_temp
-            action_time_stamp = ts
 
             quantity = quantity_
             params = {
@@ -110,7 +148,22 @@ if __name__ == '__main__':
                 "quantity": quantity,
                 # 'quoteOrderQty': quoteOrderQty_,
             }
-            print(f"place_order params: {params}", flush=True)
+            
+            seconds = Kline[-1][0] / 1000  # Convert milliseconds to seconds
+            # dest= time.strftime("%M:%S", time.localtime(seconds))
+            dest_long = time.strftime("%H:%M:%S", time.localtime(seconds))
+
+
+            print(f"{dest_long} {Kline[-1][0]} place_order params: {params}", flush=True)
             PlaceOrder = trade.post_order(params)
+            if PlaceOrder is None or 'code' in PlaceOrder:
+                print(f"====Error placing order: {PlaceOrder}", flush=True)
+                sleep(sleep_gap)
+                data_index += 1
+                continue
+            
+            has_buy = has_buy_temp
+            action_time_stamp = ts
             print(f"Order result: {PlaceOrder}", flush=True)
-        sleep(1)
+        sleep(sleep_gap)
+        data_index += 1
