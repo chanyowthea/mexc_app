@@ -24,13 +24,13 @@ if __name__ == '__main__':
     trade = mexc_spot_v3.mexc_trade()
     market = mexc_spot_v3.mexc_market()
 
-    symbol = 'BTCUSDC'
+    symbol = 'SUIUSDC'
     params_kline = {
     "symbol": symbol.upper(),
     "interval": "1m",
     "limit": "5",
     }
-    quantity_ = 0.00001
+    quantity_ = 0.4
 
     # file_name = f'{symbol}_1m_1748764380000.json'
     # json_obj = None
@@ -94,10 +94,19 @@ if __name__ == '__main__':
     #     print(f"====Error placing order: {PlaceOrder}", flush=True)
 
     has_buy = False
-    action_time_stamp = ''
+    action_time_stamp = '0'
+    action_time_stamp_int = 0
     data_index = 100
-    sleep_gap = 1
+    sleep_gap = 5
     while True:
+        seconds_local = int(time.time())
+        print(action_time_stamp, flush=True)
+        # print(f"Current local time in seconds: {seconds_local},{int(int(action_time_stamp)/1000)}", flush=True)
+        if seconds_local < action_time_stamp_int+60:
+            sleep(sleep_gap)
+            print(f"====Action time stamp is the same {seconds_local-action_time_stamp_int}", flush=True)
+            continue
+
         # real_data_index = int(data_index /60)
         # Kline = json_obj['data'][:real_data_index]  # Use the preloaded Kline data
         Kline = market.get_kline(params_kline)
@@ -164,6 +173,7 @@ if __name__ == '__main__':
             
             has_buy = has_buy_temp
             action_time_stamp = ts
+            action_time_stamp_int = int(int(action_time_stamp)/1000)
             print(f"Order result: {PlaceOrder}", flush=True)
         sleep(sleep_gap)
         data_index += 1
