@@ -59,7 +59,9 @@ if __name__ == '__main__':
     #     sleep(1)
     #     count += 1
 
+    print("mexc_app start!!!", flush=True)
     has_buy = False
+    action_time_stamp = ''
     while True:
         Kline = market.get_kline(params_kline)
         # print(f"Kline data: {Kline}", flush=True)
@@ -67,7 +69,7 @@ if __name__ == '__main__':
             print("====Kline data is not sufficient or empty.", flush=True)
             sleep(1)
             continue
-
+        
         prev_k = Kline[-2]
         prev_k_h = prev_k[2]
         prev_k_l = prev_k[3]
@@ -86,12 +88,18 @@ if __name__ == '__main__':
 
         if side is not None:
             has_buy_temp = True if side == 'BUY' else False
-            if has_buy_temp == has_buy:
-                # print(f"====No change in position, skipping order. Current side: {side}, Previous side: {has_buy}", flush=True)
+            ts = Kline[-1][0]  # Use the timestamp of the last candle
+            if ts == action_time_stamp:
+                print(f"====Action time stamp is the same, skipping order. Current time: {ts}, Previous time: {action_time_stamp}", flush=True)
                 sleep(1)
                 continue
-            else:
-                has_buy = has_buy_temp
+            if has_buy_temp == has_buy:
+                print(f"====No change in position, skipping order. Current side: {side}, Previous side: {has_buy}", flush=True)
+                sleep(1)
+                continue
+
+            has_buy = has_buy_temp
+            action_time_stamp = ts
 
             quantity = quantity_
             params = {
