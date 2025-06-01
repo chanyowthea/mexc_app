@@ -1,0 +1,5 @@
+{
+  "action": "{{strategy.order.action}}",
+  "instrument": "{{ticker}}",
+  "price": "{{strategy.order.price}}"
+}
