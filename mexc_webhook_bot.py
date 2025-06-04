@@ -15,7 +15,7 @@ import mexc_spot_v3
 
 
 # 'MARKET'
-def place_order(symbol, side, price_,quantity=0.00001, order_type='LIMIT'):
+def place_order(symbol, side, price_,quantity=0.00001, order_type='MARKET'):
     # quantity = quoteOrderQty_ / price_
     quoteOrderQty_ = quantity * float(price_)
     params = {
@@ -30,78 +30,16 @@ def place_order(symbol, side, price_,quantity=0.00001, order_type='LIMIT'):
     PlaceOrder = trade.post_order(params)
     return PlaceOrder
 
-    # path = '/api/v3/order'
-    # timestamp = int(time.time() * 1000)
-
-    # params = {
-    #     'symbol': symbol,
-    #     'side': side.upper(),
-    #     'type': order_type,
-    #     'quantity': quantity,
-    #     'timestamp': timestamp
-    # }
-
-    # query_string = '&'.join([f"{key}={params[key]}" for key in sorted(params)])
-    # signature = hmac.new(SECRET_KEY.encode(), query_string.encode(), hashlib.sha256).hexdigest()
-    # headers = {
-    #     'X-MEXC-APIKEY': API_KEY
-    # }
-
-    # params['signature'] = signature
-    # response = requests.post(BASE_URL + path, params=params, headers=headers)
-    # return response.json()
-
-import time
-
 @app.route('/webhook', methods=['POST'])
 def webhook():
     data = request.get_json()
     print(f"receive {data}",flush=True)
-    # {'id': 'Long Exit', 'action': 'sell', 'marketPosition': 'flat', 'prevMarketPosition': 'long', 'marketPositionSize': '0', 'prevMarketPositionSize': '0.012985', 'instrument': 'BTCUSDC', 'timestamp': '2025-05-31T15:36:39Z', 'amount': '0.012985'}
-    # {'action': 'sell','instrument': 'BTCUSDC','price ':'1'}
-
     try:
-        # action, symbol = data['message'].split(',')
         action = data['action']
         symbol = data['instrument']
         price = data['price']
-            
-        # params = {"symbol": symbol}
-        # Price = float(market.get_price(params)['price'])
-        # print(f"Current Price: {Price}", flush=True)
-            
-        params = {
-        "symbol": symbol.upper(),
-        "interval": "1m",
-        "limit": "5",
-        }
-        Kline = market.get_kline(params)
-        prev_k = Kline[-2]
-        prev_k_h = prev_k[2]
-        prev_k_l = prev_k[3]
-        cur_k_c = Kline[-1][4]
-
-        # print(Kline)
-        # seconds = time.time()
-        # print time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(seconds))
-
-        print('prev_k=',prev_k,prev_k_h, prev_k_l, cur_k_c,flush=True)
-        Price = price
-        order_type = 'MARKET'  # Default order type
-        if action == "BUY":
-            if cur_k_c > prev_k_h:
-                order_type = 'MARKET'
-                Price = cur_k_c
-            else:
-                Price = float(prev_k_h)+0.02
-        else:
-            if cur_k_c < prev_k_l:
-                order_type = 'MARKET'
-                Price = cur_k_c
-            else:
-                Price = float(prev_k_l)-0.02
-
-        result = place_order(symbol.upper(), action.upper(),Price,order_type=order_type)
+        quantity = data['quantity']
+        result = place_order(symbol.upper(), action.upper(),price,quantity=quantity)
         print(f"Order result: {result}", flush=True)
         return jsonify({'status': 'has run', 'response': result})
     except Exception as e:
